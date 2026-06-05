@@ -36,7 +36,7 @@ def predict_datapoint():
       results = predict_pipeline.predict(pred_df)
       if results[0] >= 100:
         results[0] = 100
-      return render_template('home.html', results=results[0])
+      return render_template('home.html', results=round(results[0], 2),input_data=pred_df.to_dict(orient='records')[0])
     
 if __name__ == "__main__":
     application.run(host="0.0.0.0", debug=True)

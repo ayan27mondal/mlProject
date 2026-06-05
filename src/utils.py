@@ -31,32 +31,49 @@ def load_object(file_path):
   
 def evaluate_models(X_train, y_train, X_test, y_test, models, params):
   try:
-    report = {}
+      report = {}
 
-    for i in range(len(models)):
-      model = list(models.values())[i]
-      
-      para = params[list(models.keys())[i]]
-      
-      gs = GridSearchCV(model, para, cv=5)
-      gs.fit(X_train, y_train)
-      model.set_params(**gs.best_params_)
-      
-      model.fit(X_train, y_train) # Train model
-      
-      # model.fit(X_train, y_train) # Train model
-      
-      y_train_pred = model.predict(X_train)
+      for model_name, model in models.items():
 
-      y_test_pred = model.predict(X_test)
+          para = params[model_name]
 
-      train_model_score = r2_score(y_train, y_train_pred)
-      
-      test_model_score = r2_score(y_test, y_test_pred)
+          # If hyperparameters exist, use GridSearchCV
+          if para:
+              gs = GridSearchCV(
+                  estimator=model,
+                  param_grid=para,
+                  cv=5,
+                  n_jobs=-1
+              )
 
-      report[list(models.keys())[i]] = test_model_score
+              gs.fit(X_train, y_train)
 
-    return report
+              model = gs.best_estimator_
+
+          # For models like Linear Regression
+          else:
+              model.fit(X_train, y_train)
+
+          y_train_pred = model.predict(X_train)
+          y_test_pred = model.predict(X_test)
+
+          train_model_score = r2_score(y_train, y_train_pred)
+          test_model_score = r2_score(y_test, y_test_pred)
+
+          logging.info(
+              f"{model_name} -> "
+              f"Train R2: {train_model_score:.4f}, "
+              f"Test R2: {test_model_score:.4f}"
+          )
+
+          report[model_name] = {
+              "score": test_model_score,
+              "model": model
+          }
+
+      return report
 
   except Exception as e:
-    raise CustomException(e, sys)
+      raise CustomException(e, sys)
+
+  
