@@ -17,7 +17,7 @@ def home():
 @application.route('/predictdata', methods=['GET', 'POST'])
 def predict_datapoint():
     if request.method == 'GET':
-      return render_template('home.html')
+      return render_template('home.html',results=None,input_data={})
     else:
       # Handle POST request for prediction
       data = CustomData(
